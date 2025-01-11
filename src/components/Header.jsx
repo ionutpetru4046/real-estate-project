@@ -2,6 +2,7 @@ import { FaSearch } from 'react-icons/fa';
 import Link from 'next/link';
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 
+
 export default function Header() {
   return (
     <header className='bg-slate-200 shadow-md'>
