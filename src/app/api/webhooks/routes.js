@@ -1,34 +1,36 @@
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
-import { createOrUpdateUser } from '../../../lib/actions/user';
+import { createOrUpdate, deleteUser } from '@/lib/actions/user';
 import { clerkClient } from '@clerk/nextjs/server';
 
 export async function POST(req) {
-  const SIGNING_SECRET = process.env.SIGNING_SECRET
+  const SIGNING_SECRET = process.env.SIGNING_SECRET;
 
   if (!SIGNING_SECRET) {
-    throw new Error('Error: Please add SIGNING_SECRET from Clerk Dashboard to .env or .env.local')
+    throw new Error(
+      'Error: Please add SIGNING_SECRET from Clerk Dashboard to .env or .env.local'
+    );
   }
 
   // Create new Svix instance with secret
-  const wh = new Webhook(SIGNING_SECRET)
+  const wh = new Webhook(SIGNING_SECRET);
 
   // Get headers
-  const headerPayload = await headers()
-  const svix_id = headerPayload.get('svix-id')
-  const svix_timestamp = headerPayload.get('svix-timestamp')
-  const svix_signature = headerPayload.get('svix-signature')
+  const headerPayload = headers();
+  const svix_id = headerPayload.get('svix-id');
+  const svix_timestamp = headerPayload.get('svix-timestamp');
+  const svix_signature = headerPayload.get('svix-signature');
 
   // If there are no headers, error out
   if (!svix_id || !svix_timestamp || !svix_signature) {
     return new Response('Error: Missing Svix headers', {
       status: 400,
-    })
+    });
   }
 
   // Get body
-  const payload = await req.json()
-  const body = JSON.stringify(payload)
+  const payload = await req.json();
+  const body = JSON.stringify(payload);
 
   let evt;
 
@@ -46,51 +48,52 @@ export async function POST(req) {
     });
   }
 
-  // Do something with payload
-  // For this guide, log payload to console
-  const { id } = evt?.data
-  const eventType = evt?.type
-  
+  // Handle webhook events
+  const { id } = evt?.data;
+  const eventType = evt?.type;
+
   if (eventType === 'user.created' || eventType === 'user.updated') {
     const { first_name, last_name, image_url, email_addresses } = evt?.data;
     try {
-        const user = await createOrUpdateUser(
-            id,
-            first_name,
-            last_name,
-            image_url,
-            email_addresses
-        );
-        if (user && eventType === 'user.created') {
-            try {
-                await clerkClient.user.updateUserMetadata(id, {
-                    publicMetadata: {
-                        userMongoId: user._id,
-                    }
-                });
-            } catch (error) {
-                console.log('Error: Could not update user metadata:', error);
-            }
+      const user = await createOrUpdate(
+        id,
+        first_name,
+        last_name,
+        image_url,
+        email_addresses
+      );
+      if (user && eventType === 'user.created') {
+        try {
+          await clerkClient.users.updateUserMetadata(id, {
+            publicMetadata: {
+              userMongoId: user._id,
+            },
+          });
+        } catch (error) {
+          console.error('Error: Could not update user metadata:', error);
+          return new Response('Error: Could not update user metadata', {
+            status: 500,
+          });
         }
+      }
     } catch (error) {
-        console.log('Error: Could not create or update user:', error);
-        return new Response('Error: Could not create or update user', {
-            status: 400,
-        });
+      console.error('Error: Could not create or update user:', error);
+      return new Response('Error: Could not create or update user', {
+        status: 500,
+      });
     }
   }
 
   if (eventType === 'user.deleted') {
     try {
-        await deleteUser(id);
+      await deleteUser(id);
     } catch (error) {
-        console.log('Error: Could not delete user:', error);
-        return new Response('Error: Could not delete user', {
-            status: 400,
-        });
+      console.error('Error: Could not delete user:', error);
+      return new Response('Error: Could not delete user', {
+        status: 500,
+      });
     }
   }
-  
 
   return new Response('Webhook received', { status: 200 });
 }
