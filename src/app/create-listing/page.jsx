@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { app } from '../../firebase';
 import { useUser } from '@clerk/nextjs';
 import { useRouter, usePathname } from 'next/navigation';
+
 export default function UpdateListing() {
   const { isSignedIn, user, isLoaded } = useUser();
   const [files, setFiles] = useState([]);
