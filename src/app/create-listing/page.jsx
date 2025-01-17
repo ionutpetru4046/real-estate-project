@@ -7,9 +7,6 @@ import {
   uploadBytesResumable,
 } from 'firebase/storage';
 
-import { useUser } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
-
 import { app } from '../../firebase';
 import { useUser } from '@clerk/nextjs';
 import { useRouter, usePathname } from 'next/navigation';
