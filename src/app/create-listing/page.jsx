@@ -30,6 +30,7 @@ export default function UpdateListing() {
     parking: false,
     furnished: false,
   });
+
   useEffect(() => {
     const fetchListing = async () => {
       const res = await fetch('/api/listing/get', {
@@ -41,6 +42,7 @@ export default function UpdateListing() {
           listingId,
         }),
       });
+
       const data = await res.json();
       if (data.success === false) {
         console.log(data.message);
@@ -50,6 +52,7 @@ export default function UpdateListing() {
     };
     fetchListing();
   }, []);
+  
   const [imageUploadError, setImageUploadError] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(false);
@@ -142,6 +145,7 @@ export default function UpdateListing() {
       });
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -162,6 +166,7 @@ export default function UpdateListing() {
           listingId,
         }),
       });
+      
       const data = await res.json();
       setLoading(false);
       if (data.success === false) {
