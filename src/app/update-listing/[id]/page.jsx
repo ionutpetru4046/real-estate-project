@@ -6,11 +6,9 @@ import {
   ref,
   uploadBytesResumable,
 } from 'firebase/storage';
-
-import { app } from '../../firebase';
+import { app } from '../../../firebase';
 import { useUser } from '@clerk/nextjs';
 import { useRouter, usePathname } from 'next/navigation';
-
 export default function UpdateListing() {
   const { isSignedIn, user, isLoaded } = useUser();
   const [files, setFiles] = useState([]);
@@ -30,7 +28,6 @@ export default function UpdateListing() {
     parking: false,
     furnished: false,
   });
-
   useEffect(() => {
     const fetchListing = async () => {
       const res = await fetch('/api/listing/get', {
@@ -42,7 +39,6 @@ export default function UpdateListing() {
           listingId,
         }),
       });
-
       const data = await res.json();
       if (data.success === false) {
         console.log(data.message);
@@ -52,7 +48,6 @@ export default function UpdateListing() {
     };
     fetchListing();
   }, []);
-  
   const [imageUploadError, setImageUploadError] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(false);
@@ -84,7 +79,6 @@ export default function UpdateListing() {
       setUploading(false);
     }
   };
-
   const storeImage = async (file) => {
     return new Promise((resolve, reject) => {
       const storage = getStorage(app);
@@ -109,14 +103,12 @@ export default function UpdateListing() {
       );
     });
   };
-
   const handleRemoveImage = (index) => {
     setFormData({
       ...formData,
       imageUrls: formData.imageUrls.filter((_, i) => i !== index),
     });
   };
-
   const handleChange = (e) => {
     if (e.target.id === 'sale' || e.target.id === 'rent') {
       setFormData({
@@ -145,7 +137,6 @@ export default function UpdateListing() {
       });
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -162,11 +153,10 @@ export default function UpdateListing() {
         },
         body: JSON.stringify({
           ...formData,
-          userMongoId: user.publicMetadata.userMongoId,
+          userMongoId: user.publicMetadata.userMogoId,
           listingId,
         }),
       });
-      
       const data = await res.json();
       setLoading(false);
       if (data.success === false) {
@@ -193,7 +183,7 @@ export default function UpdateListing() {
   return (
     <main className='p-3 max-w-4xl mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>
-        Create a Listing
+        Update a Listing
       </h1>
       <form onSubmit={handleSubmit} className='flex flex-col sm:flex-row gap-4'>
         <div className='flex flex-col gap-4 flex-1'>
@@ -392,7 +382,7 @@ export default function UpdateListing() {
             disabled={loading || uploading}
             className='p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80'
           >
-            {loading ? 'Updating...' : 'Create Listing'}
+            {loading ? 'Updating...' : 'Update listing'}
           </button>
           {error && <p className='text-red-700 text-sm'>{error}</p>}
         </div>

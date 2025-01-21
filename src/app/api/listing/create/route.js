@@ -27,7 +27,7 @@ export const POST = async (req) => {
         imageUrls: data.imageUrls,
       });
       await newListing.save();
-      return new Response(JSON.stringify(newPost), {
+      return new Response(JSON.stringify(newListing), {
         status: 200,
       });
     } catch (error) {
